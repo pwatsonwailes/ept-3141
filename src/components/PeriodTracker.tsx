@@ -38,12 +38,28 @@ export function PeriodTracker() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const { error } = await supabase.from('periods').insert([currentPeriod]);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const periodData = {
+        ...currentPeriod,
+        user_id: user.id
+      };
+
+      const { error } = await supabase.from('periods').insert([periodData]);
       if (error) throw error;
+
       setShowForm(false);
-      fetchPeriods();
+      setCurrentPeriod({
+        start_date: format(new Date(), 'yyyy-MM-dd'),
+        flow_level: 3,
+        symptoms: [],
+        notes: '',
+      });
+      await fetchPeriods();
     } catch (error) {
       console.error('Error saving period:', error);
+      alert('Failed to save period. Please try again.');
     }
   }
 
