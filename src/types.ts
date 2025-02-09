@@ -20,3 +20,13 @@ export interface AuthState {
   user: any | null;
   loading: boolean;
 }
+
+export interface ThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
+
+export interface UserSettings {
+  theme: ThemeColors;
+}

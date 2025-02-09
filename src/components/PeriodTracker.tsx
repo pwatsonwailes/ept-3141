@@ -1,25 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Period, PredictionResult } from '../types';
-import { Plus } from 'lucide-react';
+import { Period, PredictionResult, ThemeColors } from '../types';
+import { Plus, Settings as SettingsIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculatePrediction } from '../lib/predictions';
 import { PeriodForm } from './PeriodForm';
 import { PeriodPrediction } from './PeriodPrediction';
 import { PeriodList } from './PeriodList';
+import { Settings } from './Settings';
+import { defaultTheme, getThemeClasses } from '../lib/theme';
 
 export function PeriodTracker() {
   const [periods, setPeriods] = useState<Period[]>([]);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<Period | null>(null);
+  const [theme, setTheme] = useState<ThemeColors>(defaultTheme);
   const [currentPeriod, setCurrentPeriod] = useState<Partial<Period>>({
     start_date: format(new Date(), 'yyyy-MM-dd'),
     flow_level: 3,
     symptoms: [],
     notes: '',
   });
+
+  const themeClasses = getThemeClasses(theme);
 
   useEffect(() => {
     fetchPeriods();
@@ -123,25 +129,34 @@ export function PeriodTracker() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <div className={`animate-spin rounded-full h-12 w-12 border-b-2 border-${themeClasses.primary}`}></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-pink-100 p-4">
+    <div className={`min-h-screen bg-gradient-to-br ${themeClasses.gradient} p-4`}>
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-purple-800">Period Tracker</h1>
-          <button
-            onClick={handleSignOut}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-          >
-            Sign Out
-          </button>
+          <h1 className={`text-3xl font-bold text-${themeClasses.primary}`}>Period Tracker</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSettings(true)}
+              className={`p-2 text-${themeClasses.primary} hover:text-${themeClasses.primaryHover} rounded-full`}
+              title="Settings"
+            >
+              <SettingsIcon className="h-6 w-6" />
+            </button>
+            <button
+              onClick={handleSignOut}
+              className={`px-4 py-2 bg-${themeClasses.primary} text-white rounded-md hover:bg-${themeClasses.primaryHover}`}
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
 
-        {prediction && <PeriodPrediction prediction={prediction} />}
+        {prediction && <PeriodPrediction prediction={prediction} theme={theme} />}
 
         <button
           onClick={() => {
@@ -154,7 +169,7 @@ export function PeriodTracker() {
             });
             setShowForm(true);
           }}
-          className="mb-6 flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+          className={`mb-6 flex items-center gap-2 bg-${themeClasses.primary} text-white px-4 py-2 rounded-md hover:bg-${themeClasses.primaryHover}`}
         >
           <Plus className="h-5 w-5" />
           Add New Period
@@ -170,6 +185,7 @@ export function PeriodTracker() {
               setEditingPeriod(null);
             }}
             isEditing={!!editingPeriod}
+            theme={theme}
           />
         )}
 
@@ -177,6 +193,14 @@ export function PeriodTracker() {
           periods={periods}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          theme={theme}
+        />
+
+        <Settings
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          currentTheme={theme}
+          onThemeChange={setTheme}
         />
       </div>
     </div>
