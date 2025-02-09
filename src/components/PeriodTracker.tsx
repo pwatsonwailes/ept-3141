@@ -29,14 +29,36 @@ export function PeriodTracker() {
 
   useEffect(() => {
     fetchPeriods();
+    loadUserSettings();
   }, []);
 
-  useEffect(() => {
-    if (periods.length >= 3) {
-      const newPrediction = calculatePrediction(periods);
-      setPrediction(newPrediction);
+  async function loadUserSettings() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const savedTheme = user.user_metadata.theme;
+      if (savedTheme) {
+        setTheme(savedTheme);
+      }
+    } catch (error) {
+      console.error('Error loading user settings:', error);
     }
-  }, [periods]);
+  }
+
+  async function saveUserSettings(newTheme: ThemeColors) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { theme: newTheme }
+      });
+
+      if (error) throw error;
+      setTheme(newTheme);
+    } catch (error) {
+      console.error('Error saving user settings:', error);
+      alert('Failed to save settings. Please try again.');
+    }
+  }
 
   async function fetchPeriods() {
     try {
@@ -156,7 +178,7 @@ export function PeriodTracker() {
           </div>
         </div>
 
-        {prediction && <PeriodPrediction prediction={prediction} theme={theme} />}
+        {prediction && <PeriodPrediction prediction={prediction} />}
 
         <button
           onClick={() => {
@@ -185,7 +207,6 @@ export function PeriodTracker() {
               setEditingPeriod(null);
             }}
             isEditing={!!editingPeriod}
-            theme={theme}
           />
         )}
 
@@ -193,14 +214,13 @@ export function PeriodTracker() {
           periods={periods}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          theme={theme}
         />
 
         <Settings
           isOpen={showSettings}
           onClose={() => setShowSettings(false)}
           currentTheme={theme}
-          onThemeChange={setTheme}
+          onThemeChange={saveUserSettings}
         />
       </div>
     </div>
