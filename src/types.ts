@@ -9,6 +9,12 @@ export interface Period {
   created_at: string;
 }
 
+export interface PredictionResult {
+  predictedDate: Date;
+  confidenceLevel: number;
+  averageCycleLength: number;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: any | null;
