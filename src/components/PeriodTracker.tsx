@@ -38,7 +38,7 @@ export function PeriodTracker() {
 
   const [currentEmotion, setCurrentEmotion] = useState<Partial<Emotion>>({
     date: format(new Date(), 'yyyy-MM-dd'),
-    intensity: 3,
+    emotion_types: [],
     notes: '',
   });
 
@@ -151,7 +151,7 @@ export function PeriodTracker() {
       setEditingEmotion(null);
       setCurrentEmotion({
         date: format(new Date(), 'yyyy-MM-dd'),
-        intensity: 3,
+        emotion_types: [],
         notes: '',
       });
       await fetchAllData();
@@ -229,7 +229,7 @@ export function PeriodTracker() {
 
   const handleDateClick = (date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    setCurrentEmotion({ date: dateStr, intensity: 3, notes: '' });
+    setCurrentEmotion({ date: dateStr, emotion_types: [], notes: '' });
     setShowEmotionForm(true);
   };
 
@@ -304,7 +304,7 @@ export function PeriodTracker() {
               setEditingEmotion(null);
               setCurrentEmotion({
                 date: format(new Date(), 'yyyy-MM-dd'),
-                intensity: 3,
+                emotion_types: [],
                 notes: '',
               });
               setShowEmotionForm(true);

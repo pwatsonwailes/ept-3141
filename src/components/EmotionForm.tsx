@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Emotion, PANAS_EMOTIONS } from '../types';
+import { Emotion, EMOTIONS_LIST } from '../types';
 import { Heart, X, Search } from 'lucide-react';
 
 interface EmotionFormProps {
@@ -20,16 +20,13 @@ export function EmotionForm({
 }: EmotionFormProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const allEmotions = [
-    ...PANAS_EMOTIONS.positive.map(e => ({ name: e, category: 'positive' })),
-    ...PANAS_EMOTIONS.negative.map(e => ({ name: e, category: 'negative' }))
-  ];
-
   const filteredEmotions = searchTerm
-    ? allEmotions.filter(e =>
-        e.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ? EMOTIONS_LIST.filter(e =>
+        e.toLowerCase().includes(searchTerm.toLowerCase())
       )
-    : allEmotions;
+    : EMOTIONS_LIST;
+
+  const selectedEmotions = (currentEmotion.emotion_types || []) as string[];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -65,7 +62,7 @@ export function EmotionForm({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Emotion
+              Emotions (select one or more)
             </label>
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -79,51 +76,60 @@ export function EmotionForm({
             </div>
 
             <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
-              {filteredEmotions.map(({ name, category }) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => setCurrentEmotion({ ...currentEmotion, emotion_type: name })}
-                  className={`p-3 rounded-md text-left transition-all ${
-                    currentEmotion.emotion_type === name
-                      ? category === 'positive'
-                        ? 'bg-green-100 border-2 border-green-600 text-green-900'
-                        : 'bg-red-100 border-2 border-red-600 text-red-900'
-                      : category === 'positive'
-                      ? 'bg-green-50 hover:bg-green-100 border border-green-200'
-                      : 'bg-red-50 hover:bg-red-100 border border-red-200'
-                  }`}
-                >
-                  <span className="capitalize font-medium">{name}</span>
-                </button>
-              ))}
+              {filteredEmotions.map((emotion) => {
+                const isSelected = selectedEmotions.includes(emotion);
+                return (
+                  <button
+                    key={emotion}
+                    type="button"
+                    onClick={() => {
+                      if (isSelected) {
+                        setCurrentEmotion({
+                          ...currentEmotion,
+                          emotion_types: selectedEmotions.filter(e => e !== emotion)
+                        });
+                      } else {
+                        setCurrentEmotion({
+                          ...currentEmotion,
+                          emotion_types: [...selectedEmotions, emotion]
+                        });
+                      }
+                    }}
+                    className={`p-3 rounded-md text-left transition-all ${
+                      isSelected
+                        ? 'bg-rose-100 border-2 border-rose-600 text-rose-900'
+                        : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    <span className="font-medium">{emotion}</span>
+                  </button>
+                );
+              })}
             </div>
-            {!currentEmotion.emotion_type && (
+            {selectedEmotions.length === 0 && (
               <p className="text-sm text-gray-500 mt-2">
-                Please select an emotion from the list above
+                Please select at least one emotion
               </p>
             )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Intensity: {currentEmotion.intensity || 3}
-            </label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Low</span>
-              <input
-                type="range"
-                min="1"
-                max="5"
-                value={currentEmotion.intensity || 3}
-                onChange={(e) => setCurrentEmotion({
-                  ...currentEmotion,
-                  intensity: parseInt(e.target.value)
-                })}
-                className="flex-1"
-              />
-              <span className="text-sm text-gray-600">High</span>
-            </div>
+            {selectedEmotions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {selectedEmotions.map(emotion => (
+                  <span key={emotion} className="inline-flex items-center gap-1 bg-rose-100 text-rose-800 px-2 py-1 rounded text-sm">
+                    {emotion}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentEmotion({
+                        ...currentEmotion,
+                        emotion_types: selectedEmotions.filter(e => e !== emotion)
+                      })}
+                      className="ml-1 hover:text-rose-900"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
@@ -149,7 +155,7 @@ export function EmotionForm({
             </button>
             <button
               type="submit"
-              disabled={!currentEmotion.emotion_type}
+              disabled={!selectedEmotions.length}
               className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isEditing ? 'Update' : 'Save'}

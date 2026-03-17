@@ -13,8 +13,7 @@ export interface Emotion {
   id: string;
   user_id: string;
   date: string;
-  emotion_type: string;
-  intensity: number;
+  emotion_types: string[];
   notes?: string;
   created_at: string;
 }
@@ -65,29 +64,14 @@ export interface UserSettings {
   theme: ThemeColors;
 }
 
-export const PANAS_EMOTIONS = {
-  positive: [
-    'interested',
-    'excited',
-    'strong',
-    'enthusiastic',
-    'proud',
-    'alert',
-    'inspired',
-    'determined',
-    'attentive',
-    'active'
-  ],
-  negative: [
-    'distressed',
-    'upset',
-    'guilty',
-    'scared',
-    'hostile',
-    'irritable',
-    'ashamed',
-    'nervous',
-    'jittery',
-    'afraid'
-  ]
-} as const;
+export const EMOTIONS_LIST = [
+  'Neutral',
+  'Anxious',
+  'Severe anxiety',
+  'Insomnia',
+  'Intrusive thoughts',
+  'Sad/crying',
+  'Irritable',
+  'Happy',
+  'Fatigue'
+] as const;
